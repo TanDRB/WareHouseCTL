@@ -159,7 +159,7 @@ namespace WareHouseCTL.Views
             string newShelfId = GenerateRandomShelfId();
             string shelfName = GenerateShelfName();
             string chemicalId = cbChemicalName.SelectedValue.ToString();
-            var chemical = _context.Chemicals.FirstOrDefault(c => c.ChemicalID == chemicalId);
+            var chemical = _context.Chemicals.FirstOrDefault(c => c.ChemicalId == chemicalId);
             string chemicalName = chemical?.ChemicalName ?? "Chưa xác định"; // Lấy ChemicalName từ Chemical
 
             // Kiểm tra xem ChemicalId đã tồn tại trong Shelves chưa
@@ -175,7 +175,6 @@ namespace WareHouseCTL.Views
                 ShelfID = newShelfId,
                 ShelfName = shelfName,
                 ChemicalId = chemicalId,
-                ChemicalName = chemicalName, // Gán ChemicalName tạm thời để tránh lỗi
                 DateAdded = DateTime.Now // Gán thời gian thêm
             };
 
@@ -200,7 +199,7 @@ namespace WareHouseCTL.Views
             {
                 shelf.ShelfName = txtShelfName.Text;
                 string newChemicalId = cbChemicalName.SelectedValue?.ToString();
-                var chemical = _context.Chemicals.FirstOrDefault(c => c.ChemicalID == newChemicalId);
+                var chemical = _context.Chemicals.FirstOrDefault(c => c.ChemicalId == newChemicalId);
                 string chemicalName = chemical?.ChemicalName ?? "Chưa xác định";
 
                 // Kiểm tra xem ChemicalId mới có đang được sử dụng bởi kệ khác không (trừ kệ hiện tại)
@@ -212,7 +211,6 @@ namespace WareHouseCTL.Views
                 }
 
                 shelf.ChemicalId = newChemicalId;
-                shelf.ChemicalName = chemicalName; // Cập nhật ChemicalName
                 _context.SaveChanges();
                 LoadShelfData();
                 ClearControls();
@@ -274,10 +272,10 @@ namespace WareHouseCTL.Views
                 string chemicalId = row.Cells["ChemicalId"].Value?.ToString();
                 if (!string.IsNullOrEmpty(chemicalId))
                 {
-                    var chemical = _context.Chemicals.FirstOrDefault(c => c.ChemicalID == chemicalId);
+                    var chemical = _context.Chemicals.FirstOrDefault(c => c.ChemicalId == chemicalId);
                     if (chemical != null)
                     {
-                        cbChemicalName.SelectedValue = chemical.ChemicalID;
+                        cbChemicalName.SelectedValue = chemical.ChemicalId;
                     }
                 }
             }

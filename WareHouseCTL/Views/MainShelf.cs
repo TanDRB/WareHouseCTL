@@ -81,12 +81,12 @@ namespace WareHouseCTL.Views
                 // Label duy nhất kết hợp ShelfName và ChemicalName
                 Label combinedLabel = new Label
                 {
-                    Text = $"{shelf.ShelfName ?? "Chưa có tên"}\n({shelf.ChemicalName ?? "Chưa có hóa chất"})",
+                    Text = $"{shelf.ShelfName ?? "Chưa có tên"}\n({shelf.Chemical?.ChemicalName ?? "Chưa có hóa chất"})",
                     Tag = shelf.ShelfID,
-                    Size = new Size(130, 130), // Sử dụng toàn bộ không gian
+                    Size = new Size(130, 130),
                     TextAlign = ContentAlignment.MiddleCenter,
                     ForeColor = Color.Black,
-                    Font = new Font("Arial", 14, FontStyle.Bold), // Font to và đậm
+                    Font = new Font("Arial", 14, FontStyle.Bold),
                     Location = new Point(10, 10)
                 };
 

@@ -19,12 +19,21 @@ namespace WareHouseCTL.Views
             LoadChemicalData();
         }
 
+        private void ChemicalManager_Load(object sender, EventArgs e)
+        {
+            // Phương thức rỗng, chờ thêm logic sau
+        }
+
         private void LoadChemicalData()
         {
             try
             {
                 // Truy vấn dữ liệu từ bảng Chemical
-                var chemicals = _context.Chemicals.ToList();
+                var chemicals = _context.Chemicals
+                    .Include(c => c.Shelf)
+                    .Include(c => c.ShelfContainers)
+                    .Include(c => c.ChemicalDetails)
+                    .ToList();
 
                 // Kiểm tra nếu có dữ liệu
                 if (chemicals == null || chemicals.Count == 0)
@@ -52,13 +61,13 @@ namespace WareHouseCTL.Views
         private void DataGridViewChemicals_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
             // Tùy chỉnh hiển thị cột sau khi dữ liệu được ràng buộc
-            if (dataGridViewChemicals.Columns["ChemicalID"] != null)
+            if (dataGridViewChemicals.Columns["ChemicalId"] != null)
             {
-                dataGridViewChemicals.Columns["ChemicalID"].HeaderText = "Mã hóa chất";
-                dataGridViewChemicals.Columns["ChemicalID"].Width = 180;
-                dataGridViewChemicals.Columns["ChemicalID"].ReadOnly = true;
-                dataGridViewChemicals.Columns["ChemicalID"].Visible = true;
-                dataGridViewChemicals.Columns["ChemicalID"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                dataGridViewChemicals.Columns["ChemicalId"].HeaderText = "Mã hóa chất";
+                dataGridViewChemicals.Columns["ChemicalId"].Width = 180;
+                dataGridViewChemicals.Columns["ChemicalId"].ReadOnly = true;
+                dataGridViewChemicals.Columns["ChemicalId"].Visible = true;
+                dataGridViewChemicals.Columns["ChemicalId"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             }
             if (dataGridViewChemicals.Columns["ChemicalName"] != null)
             {
@@ -76,10 +85,18 @@ namespace WareHouseCTL.Views
                 dataGridViewChemicals.Columns["ChemicalDescribe"].Visible = true;
                 dataGridViewChemicals.Columns["ChemicalDescribe"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             }
-            // Loại bỏ cột "Shelf" nếu có
+            // Thêm và ẩn cột ShelfContainers và ChemicalDetails
             if (dataGridViewChemicals.Columns["Shelf"] != null)
             {
                 dataGridViewChemicals.Columns["Shelf"].Visible = false;
+            }
+            if (dataGridViewChemicals.Columns["ShelfContainers"] != null)
+            {
+                dataGridViewChemicals.Columns["ShelfContainers"].Visible = false;
+            }
+            if (dataGridViewChemicals.Columns["ChemicalDetails"] != null)
+            {
+                dataGridViewChemicals.Columns["ChemicalDetails"].Visible = false;
             }
 
             // Điều chỉnh chiều cao hàng để hiển thị toàn bộ nội dung
@@ -107,11 +124,11 @@ namespace WareHouseCTL.Views
             do
             {
                 newChemicalID = GenerateRandomChemicalID(); // Sinh ID ngẫu nhiên
-            } while (_context.Chemicals.Any(c => c.ChemicalID == newChemicalID)); // Kiểm tra trùng lặp ID
+            } while (_context.Chemicals.Any(c => c.ChemicalId == newChemicalID)); // Kiểm tra trùng lặp ID
 
             var chemical = new Chemical
             {
-                ChemicalID = newChemicalID,
+                ChemicalId = newChemicalID,
                 ChemicalName = txtChemicalName.Text,
                 ChemicalDescribe = richTextBoxChemicalDescribe.Text
             };
@@ -170,7 +187,7 @@ namespace WareHouseCTL.Views
                     try
                     {
                         // Lấy lại bản ghi từ context để đảm bảo trạng thái
-                        var trackedChemical = _context.Chemicals.Local.FirstOrDefault(c => c.ChemicalID == txtChemicalID.Text) ?? chemical;
+                        var trackedChemical = _context.Chemicals.Local.FirstOrDefault(c => c.ChemicalId == txtChemicalID.Text) ?? chemical;
                         _context.Chemicals.Remove(trackedChemical);
                         _context.SaveChanges();
                         LoadChemicalData();
@@ -202,7 +219,7 @@ namespace WareHouseCTL.Views
             if (dataGridViewChemicals.SelectedRows.Count > 0)
             {
                 var row = dataGridViewChemicals.SelectedRows[0];
-                txtChemicalID.Text = row.Cells["ChemicalID"].Value?.ToString();
+                txtChemicalID.Text = row.Cells["ChemicalId"].Value?.ToString();
                 txtChemicalName.Text = row.Cells["ChemicalName"].Value?.ToString();
                 richTextBoxChemicalDescribe.Text = row.Cells["ChemicalDescribe"].Value?.ToString();
             }

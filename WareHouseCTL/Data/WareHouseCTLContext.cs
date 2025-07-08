@@ -1,22 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using WareHouseCTL.Models;
 
 namespace WareHouseCTL.Data
 {
     public class WareHouseCTLContext : DbContext
     {
-        // Định nghĩa các DbSet cho các bảng
         public DbSet<Shelf> Shelves { get; set; }
         public DbSet<Chemical> Chemicals { get; set; }
-        public DbSet<ShelfContainer> ShelfContainers { get; set; } // Sửa từ Container thành ShelfContainer
+        public DbSet<ShelfContainer> ShelfContainers { get; set; }
         public DbSet<ChemicalDetail> ChemicalDetails { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -43,9 +35,8 @@ namespace WareHouseCTL.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Cấu hình khóa chính
             modelBuilder.Entity<Chemical>()
-                .HasKey(c => c.ChemicalID); // Sửa từ ChemicalID thành ChemicalId
+                .HasKey(c => c.ChemicalId);
 
             modelBuilder.Entity<Shelf>()
                 .HasKey(s => s.ShelfID);
@@ -56,15 +47,13 @@ namespace WareHouseCTL.Data
             modelBuilder.Entity<ChemicalDetail>()
                 .HasKey(ct => ct.DetailId);
 
-            // Cấu hình quan hệ 1-1 giữa Chemical và Shelf (một hóa chất chỉ gán cho một kệ)
             modelBuilder.Entity<Shelf>()
                 .HasOne(s => s.Chemical)
                 .WithOne(c => c.Shelf)
                 .HasForeignKey<Shelf>(s => s.ChemicalId)
-                .IsRequired()
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Cấu hình quan hệ giữa Shelf và ShelfContainer
             modelBuilder.Entity<ShelfContainer>()
                 .HasOne(sc => sc.Shelf)
                 .WithMany(s => s.ShelfContainers)
@@ -72,7 +61,13 @@ namespace WareHouseCTL.Data
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Cấu hình quan hệ giữa ShelfContainer và ChemicalDetail
+            modelBuilder.Entity<ShelfContainer>()
+                .HasOne(sc => sc.Chemical)
+                .WithMany(c => c.ShelfContainers)
+                .HasForeignKey(sc => sc.ChemicalId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<ChemicalDetail>()
                 .HasOne(ct => ct.ShelfContainer)
                 .WithMany(sc => sc.ChemicalDetails)
@@ -80,11 +75,10 @@ namespace WareHouseCTL.Data
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Cấu hình quan hệ giữa ChemicalDetail và Chemical
             modelBuilder.Entity<ChemicalDetail>()
                 .HasOne(ct => ct.Chemical)
-                .WithMany()
-                .HasForeignKey(ct => ct.ItemName)
+                .WithMany(c => c.ChemicalDetails)
+                .HasForeignKey(ct => ct.ChemicalId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
         }
